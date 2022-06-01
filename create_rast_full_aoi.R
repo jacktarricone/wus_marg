@@ -59,13 +59,14 @@ for (i in seq_along(lat_mat_list)){
     # store in list
     mat_list_23[[j]] <-dowy200 
     
-    # create single matrix for said lat by combining them from list
-    # reverse to geolocate propertly
-    day200_mat <-do.call(cbind, rev(day200_list))
     nc_close(ncin) # close netcdf, idk why it was online
   }
   
-  # reverse and convert list of matrices to single one for said degree
+  # create single matrix for said lat by combining them from list
+  # reverse to geolocate propertly
+  day200_mat <-do.call(cbind, rev(mat_list_23))
+  
+  # store matrix 
   lat_mat_list[[i]] <-day200_mat
   
   # ext(day200_rast_full)<- ext(-124,-102,47,48)
@@ -78,13 +79,13 @@ for (i in seq_along(lat_mat_list)){
 lat_mat_list
 
 #day200_mat <-do.call(cbind, rev(day200_list))
-full_mat <-do.call(rbind, lat_mat_list)
+full_mat <-do.call(rbind, rev(lat_mat_list))
 day200_rast <-rast(full_mat)
-ext(day200_rast)<- ext(-124,-102,46,48)
+ext(day200_rast)<- ext(-125,-102,47,49)
 crs(day200_rast) <-"epsg:4326"
 day200_rast
 plot(day200_rast)
-writeRaster(day200_rast, "47n.tif")
+writeRaster(day200_rast, "4849n.tif")
 
 # data extent
 
