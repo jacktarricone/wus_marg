@@ -10,19 +10,81 @@ require(XML)
 setwd("/Users/jacktarricone/wus_marg/wy_2017/")
 
 # file path for 2017 swe and sca ncdf4 in idaho
-netcdf_files <-list.files(pattern = ".*SWE_SCA_POST.nc$", full.names = TRUE)
-print(netcdf_files)
+# netcdf_files <-list.files(pattern = ".*SWE_SCA_POST.nc$", full.names = TRUE)
+# print(netcdf_files)
+# print(netcdf_files[15])
 
-list <- vector(mode = "list", length = length(netcdf_files))
+# create list of latitude values by degree or tile
+lat_range <-seq(47,48,1)
 
-for (i in seq_along(netcdf_files)){
+# create empty list of latitude values loop matrices into
+lat_mat_list <-vector(mode = "list", length = length(lat_range))
+
+# create list of 23 dummy matrices so every row has same number of columns
+# 23 is maximum number of latitude degrees in a row
+dummy_mat <-matrix(, nrow = 225, ncol = 225)
+mat_list_23 <-replicate(23, dummy_mat, simplify = FALSE)
+
+
+# goal: a nested loop that creates a list of list by latitude
+# can then be stiched back together to make full scene raster
+
+
+for (i in seq_along(lat_mat_list)){
   
-  # pull out SWE variable
-  ncin <- nc_open(netcdf_files[[i]])
-  list[[i]] <- ncvar_get(ncin,"SWE_Post")
-  nc_close(ncin)
+  # define latitude value
+  lat_value <-lat_range[i]
+  print(lat_value) # test print
   
+  # create string to search files using lat value
+  file_name <-paste0(".*", lat_value, ".*SWE_SCA_POST.nc$")
+  
+  # list all SWE files for defined latitude values
+  netcdf_files <-list.files(pattern = file_name, full.names = TRUE)
+  
+  for (j in seq_along(netcdf_files)){
+    
+    # open file
+    ncin <- nc_open(netcdf_files[[j]])
+  
+    # bring swe variable into array
+    swe_array <- ncvar_get(ncin,"SWE_Post") # read in
+    mean_swe_array <-swe_array[,,1,] # pull out first stat or "mean SWE"
+    dowy200 <-mean_swe_array[,,200] # day of water year 200
+  
+    # test plots for knowing the loop is working
+    test <-rast(dowy200)
+    plot(test)
+    
+    # store in list
+    mat_list_23[[j]] <-dowy200 
+    
+    # create single matrix for said lat by combining them from list
+    # reverse to geolocate propertly
+    day200_mat <-do.call(cbind, rev(day200_list))
+    nc_close(ncin) # close netcdf, idk why it was online
+  }
+  
+  # reverse and convert list of matrices to single one for said degree
+  lat_mat_list[[i]] <-day200_mat
+  
+  # ext(day200_rast_full)<- ext(-124,-102,47,48)
+  # crs(day200_rast_full) <-"epsg:4326"
+  # day200_rast_full
+  # plot(day200_rast_full)
+   
 }
+
+lat_mat_list
+
+#day200_mat <-do.call(cbind, rev(day200_list))
+full_mat <-do.call(rbind, lat_mat_list)
+day200_rast <-rast(full_mat)
+ext(day200_rast)<- ext(-124,-102,46,48)
+crs(day200_rast) <-"epsg:4326"
+day200_rast
+plot(day200_rast)
+writeRaster(day200_rast, "47n.tif")
 
 # data extent
 
