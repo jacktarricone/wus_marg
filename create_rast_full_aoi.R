@@ -10,7 +10,31 @@ require(XML)
 setwd("/Users/jacktarricone/wus_marg/wy_2017/")
 
 # file path for 2017 swe and sca ncdf4 in idaho
-netcdf_list <-list.files(pattern = "SWE_SCA_POST.nc$", full.names = TRUE)
+netcdf_files <-list.files(pattern = ".*SWE_SCA_POST.nc$", full.names = TRUE)
+print(netcdf_files)
+
+list <- vector(mode = "list", length = length(netcdf_files))
+
+for (i in seq_along(netcdf_files)){
+  
+  # pull out SWE variable
+  ncin <- nc_open(netcdf_files[[i]])
+  list[[i]] <- ncvar_get(ncin,"SWE_Post")
+  nc_close(ncin)
+  
+}
+
+# data extent
+
+# Northernmost latitude: 49 N 
+# Southernmost latitude 31 N 
+
+# Westernmost longitude: -125 W
+# Easternmost longitude: -102 W
+
+
+
+
 head(netcdf_list)
 ncin <- nc_open(name)
 dname <- "SWE_Post"  # define variable name
