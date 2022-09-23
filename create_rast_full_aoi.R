@@ -4,7 +4,7 @@
 
 library(terra)
 library(ncdf4)
-require(XML)
+library(XML)
 
 ### starting the loop.....
 
@@ -29,7 +29,7 @@ lat_mat_list <-vector(mode = "list", length = length(lat_range))
 
 # create list of 23 dummy matrices so every row has same number of columns
 # 23 is maximum number of latitude degrees in a row
-dummy_mat <-matrix(, nrow = 225, ncol = 225)
+dummy_mat <-matrix(nrow = 225, ncol = 225)
 mat_list_23 <-replicate(23, dummy_mat, simplify = FALSE)
 
 
@@ -101,17 +101,5 @@ day200_rast # inspect
 # test plot
 plot(day200_rast)
 writeRaster(day200_rast, "wy2017_dowy200.tif") # save
-
-
-
-
-
-
-
-
-
-
-
-
 
 
