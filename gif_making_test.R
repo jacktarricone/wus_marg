@@ -2,6 +2,7 @@
 # sept 23, 2022
 
 library(terra)
+library(lubridate)
 library(ncdf4)
 library(gganimate)
 library(gapminder)
@@ -43,38 +44,35 @@ plot(stack[[170]])
 stack_df <-as.data.frame(stack, xy = TRUE)
 
 # create dates sequence
-dates_seq <-seq(as.Date("1984-10-01"),as.Date("1985-09-30"),1)
+dates_seq <-seq(ymd(origin = "1984-10-01"), ymd("1985-09-30"),1)
 colnames(stack_df)[3:367] <-as.character(dates_seq) # rename cols to dowy numbers
 
 # pivot for plotting
 stack_df_plot <-tidyr::pivot_longer(stack_df,3:367) # pivot
 colnames(stack_df_plot)[3:4] <-c("date","swe") # rename
-stack_df_plot$date <-as.Date(stack_df_plot$date) # convert to date
-test <-dplyr::filter(stack_df_plot, date >= as.Date("1985-03-25") & date <= as.Date("1985-04-10"))
+stack_df_plot$date <-ymd(stack_df_plot$date) # convert to date
+test <-as.data.frame(
+  dplyr::filter(stack_df_plot, date >= ymd("1985-03-25") & date <= ymd("1985-04-10")))
 
 # plot
-plot <-ggplot(test,aes(x,y, fill = as.numeric(swe), group = date)) +
+plot <-ggplot(stack_df_plot,
+              aes(x,y, fill = swe, group = date)) +
   geom_raster() +
   labs(x="Lon (deg)",y="Lat (deg)")+
   coord_equal() +
   labs(fill = "SWE (m)") + #, title = "Grand Mesa Unwrapped Phase 2021 UAVSAR Time Series") +
-  scale_fill_gradientn('UNW (rad)', limits = c(0,2),
+  scale_fill_gradientn('UNW (rad)', limits = c(0,1.5),
                        colours = colorRampPalette(c("white", "darkblue"))(20)) +
   theme(strip.background = element_rect(colour="white", fill="white")) +
   transition_time(date) +
-  labs(title = "Sierra Snow Water Equivalent: {frame_time}")+
-  ease_aes()
+  labs(title = "North Lake Tahoe SWE: {frame_time}")+
+  ease_aes("linear")
 
 #check
 plot
 
 # render and save
 setwd("/Users/jacktarricone/wus_marg/")
-# animate(plot, height=500, width=500, renderer=gifski_renderer())
-anim_save("swe_map_test_v2.gif",
-          plot,
-          height=500, 
-          width=500, 
-          renderer=gifski_renderer())
+anim_save("north_lake_swe_map_1984.gif",plot)
 
 
