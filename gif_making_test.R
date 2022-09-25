@@ -57,9 +57,6 @@ colnames(stack_df_plot)[3:4] <-c("date","swe") # rename
 stack_df_plot$date <-ymd(stack_df_plot$date) # convert to date
 class(stack_df_plot)
 
-# change 0 to nan for plotting
-stack_df_plot[stack_df_plot == 0] <-NA
-
 # date filtering
 # <-as.data.frame(dplyr::filter(stack_df_plot, date >= ymd("1985-03-25") & date <= ymd("1985-04-10")))
 
@@ -71,36 +68,39 @@ myMap <- get_map(location=loc,
                  source="google", maptype="satellite", crop=TRUE)
 
 # see map, looks good
-ggmap(myMap) 
+ggmap(myMap)
 
 # set scale
 blues_scale <-brewer.pal(9, 'Blues')
 
-# color test
+# single plot test before making gif
 ggmap(myMap) +
   geom_raster(stack_df, mapping = aes(x,y, fill = `2018-04-01`)) +
   labs(x="Lon (deg)",y="Lat (deg)")+
   coord_equal()+
-  scale_fill_gradientn(colours = blues_scale, limits = c(0,2.5), na.value="transparent")
-  #theme(strip.background = element_rect(colour="white", fill="white")) 
-  #transition_time(date) +
-  #labs(title = "North Lake Tahoe SWE: {frame_time}")
-  #ease_aes("linear")
+  scale_fill_gradientn(colours = blues_scale, limits = c(0,2.5), na.value="transparent") +
+  theme(strip.background = element_rect(colour="white", fill="white")) +
+  labs(title = "North Lake Tahoe SWE: 2018-04-01", fill = "SWE (m)")
+
+# ggsave("nl_swe_2018_04_01.png",
+#        width = 7,
+#        height = 7,
+#        dpi = 400)
 
 # plot for animation
-plot <-ggplot(stack_df_plot,
-              aes(x,y, fill = swe, group = date)) +
-  geom_raster() + 
-  labs(x="Lon (deg)",y="Lat (deg)")+
+plot <-ggmap(myMap)+
+  geom_raster(stack_df_plot, mapping = aes(x,y, group = date)) +
   coord_equal() + # set aspect ratio
-  scale_fill_gradientn(colours = blues_scale, limits = c(0,3), na.value = 'darkblue') + # colors
-  theme(strip.background = element_rect(colour="white", fill="white")) + # format
+  scale_fill_gradientn(colours = blues_scale, limits = c(0,2.5), na.value="transparent") +
+  theme(strip.background = element_rect(colour="white", fill="white")) +
   transition_time(date) + # format gif by date
-  labs(title = "North Lake Tahoe SWE: {frame_time}")+
+  labs(title = "North Lake Tahoe SWE: {frame_time}", fill = "SWE (m)",
+       x="Lon (deg)", y="Lat (deg)")+
   ease_aes("linear") # ow gifs change
 
 # render and save
 setwd("/Users/jacktarricone/wus_marg/")
-animate(plot, duration = 30)
-anim_save("north_lake_swe_map_2018.gif", animation = last_animation())
+animate(plot, nframes = 365, fps=.1)
+anim_save("north_lake_swe_map_2018_v2.gif", animation = last_animation())
+
 
