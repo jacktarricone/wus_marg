@@ -7,7 +7,7 @@ library(ncdf4)
 library(ggmap)
 library(gganimate)
 library(gapminder)
-library(ggplot2);theme_set(theme_classic(12))
+library(ggplot2);theme_set(theme_minimal(12))
 library(RColorBrewer)
 
 # set working directory for full year i just got off nsidc
@@ -80,7 +80,7 @@ ggmap(myMap) +
   geom_raster(stack_df, mapping = aes(x,y, fill = `2018-04-01`)) +
   coord_equal()+
   scale_fill_gradientn(colours = blues_scale, limits = c(0,2.5), na.value="transparent") +
-  theme(strip.background = element_rect(colour="white", fill="white")) +
+  theme(panel.border = element_rect(colour = "black", fill=NA, size=1)) +
   labs(title = "North Lake Tahoe SWE: 2018-04-01", fill = "SWE (m)",
        x="Lon (deg)", y="Lat (deg)")
 
@@ -97,6 +97,7 @@ plot <-ggmap(myMap) +
   geom_raster(stack_df_plot, mapping = aes(x,y, group = date, fill = swe)) + # need both fill and group
   coord_equal() + # set aspect ratio
   scale_fill_gradientn(colours = blues_scale, limits = c(0,2.5), na.value="transparent") +
+  theme(panel.border = element_rect(colour = "black", fill=NA, size=1)) +
   labs(title = "North Lake Tahoe SWE: {frame_time}", 
        fill = "SWE (m)",
        x="Lon (deg)", y="Lat (deg)")+
@@ -105,7 +106,8 @@ plot <-ggmap(myMap) +
 
 # render and save
 setwd("/Users/jacktarricone/wus_marg/")
-animate(plot, fps = 8) # 8 frames per second = 45ish seconds total
-anim_save("north_lake_swe_map_2018_v2.gif", animation = last_animation())
+animate(plot, fps = 5,
+        height = 5, width = 5, units = "in", res = 200) # 8 frames per second = 45ish seconds total
+anim_save("north_lake_swe_map_2018_v4.gif", animation = last_animation())
 
 
