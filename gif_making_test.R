@@ -17,7 +17,7 @@ setwd("/Users/jacktarricone/wus_marg/sierra_tile")
 nc_list <-list.files(pattern = "SWE_SCA_POST.nc$", full.names = TRUE)
 nc_list
 
-# pull out one near tahoe
+# pull out wy2018
 wy2018 <-nc_list[35]
 wy2018
 
@@ -65,7 +65,9 @@ loc <-c(-121,39,-120,40)
 
 # download google sat
 myMap <- get_map(location=loc,
-                 source="google", maptype="satellite", crop=TRUE)
+                 source="google", 
+                 maptype="satellite", 
+                 crop=TRUE)
 
 # see map, looks good
 ggmap(myMap)
@@ -76,31 +78,34 @@ blues_scale <-brewer.pal(9, 'Blues')
 # single plot test before making gif
 ggmap(myMap) +
   geom_raster(stack_df, mapping = aes(x,y, fill = `2018-04-01`)) +
-  labs(x="Lon (deg)",y="Lat (deg)")+
   coord_equal()+
   scale_fill_gradientn(colours = blues_scale, limits = c(0,2.5), na.value="transparent") +
   theme(strip.background = element_rect(colour="white", fill="white")) +
-  labs(title = "North Lake Tahoe SWE: 2018-04-01", fill = "SWE (m)")
+  labs(title = "North Lake Tahoe SWE: 2018-04-01", fill = "SWE (m)",
+       x="Lon (deg)", y="Lat (deg)")
 
 # ggsave("nl_swe_2018_04_01.png",
 #        width = 7,
 #        height = 7,
 #        dpi = 400)
 
+# date filtering
+# test <-as.data.frame(dplyr::filter(stack_df_plot, date >= ymd("2018-03-25") & date <= ymd("2018-03-27")))
+
 # plot for animation
-plot <-ggmap(myMap)+
-  geom_raster(stack_df_plot, mapping = aes(x,y, group = date)) +
+plot <-ggmap(myMap) +
+  geom_raster(stack_df_plot, mapping = aes(x,y, group = date, fill = swe)) +
   coord_equal() + # set aspect ratio
   scale_fill_gradientn(colours = blues_scale, limits = c(0,2.5), na.value="transparent") +
-  theme(strip.background = element_rect(colour="white", fill="white")) +
-  transition_time(date) + # format gif by date
-  labs(title = "North Lake Tahoe SWE: {frame_time}", fill = "SWE (m)",
+  labs(title = "North Lake Tahoe SWE: {frame_time}", 
+       fill = "SWE (m)",
        x="Lon (deg)", y="Lat (deg)")+
+  transition_time(date) + # format gif by date
   ease_aes("linear") # ow gifs change
 
 # render and save
 setwd("/Users/jacktarricone/wus_marg/")
-animate(plot, nframes = 365, fps=.1)
-anim_save("north_lake_swe_map_2018_v2.gif", animation = last_animation())
+animate(plot, fps=.11)
+anim_save("north_lake_swe_map_2018_v2", animation = last_animation())
 
 
