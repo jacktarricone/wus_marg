@@ -94,7 +94,7 @@ ggmap(myMap) +
 
 # plot for animation
 plot <-ggmap(myMap) +
-  geom_raster(stack_df_plot, mapping = aes(x,y, group = date, fill = swe)) +
+  geom_raster(stack_df_plot, mapping = aes(x,y, group = date, fill = swe)) + # need both fill and group
   coord_equal() + # set aspect ratio
   scale_fill_gradientn(colours = blues_scale, limits = c(0,2.5), na.value="transparent") +
   labs(title = "North Lake Tahoe SWE: {frame_time}", 
@@ -105,7 +105,7 @@ plot <-ggmap(myMap) +
 
 # render and save
 setwd("/Users/jacktarricone/wus_marg/")
-animate(plot, fps=.11)
-anim_save("north_lake_swe_map_2018_v2", animation = last_animation())
+animate(plot, fps = 8) # 8 frames per second = 45ish seconds total
+anim_save("north_lake_swe_map_2018_v2.gif", animation = last_animation())
 
 
